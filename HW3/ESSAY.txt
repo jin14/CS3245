@@ -1,0 +1,55 @@
+This is the answers to the essay question of assignment 3.
+A0139100X
+
+1)In this assignment, we didn't ask you to support phrasal queries, which is a feature that is typically supported in web search engines. Describe how you would support phrasal search in conjunction with the VSM model. A sketch of the algorithm is sufficient. (For those of you who like a challenge, please go ahead and implement this feature in your submission but clearly demarcate it in your code and allow this feature to be turned on or off using the command line switch "-x" (where "-x" means to turn on the extended processing of phrasal queries). We will give a small bonus to submissions that achieve this functionality correctly).
+
+
+Supporting Phrasal Queries:
+
+In conjunction with the VSM model, I would propose 2 different mechanisms that would help to support phrasal queries.
+
+A. Bigram indexes
+
+Brief sketch:
+- In the indexing phase, use the nltk.ngram module to break down the documents in the bigrams.
+- Store these bigrams in the separate dictionary and postings list
+- Do the same steps for the VSM model
+
+We can have a separate dictionary and postings dedicated to bigram index. With the same implementation as the current unigram, storing bigram index can support phrasal queries. The downside is that storing these bigram indexes will take up a large space.
+
+B. Positional Index
+
+We came across positional index in the lecture. We can store the position index of the term in the document.
+With these position index, we can check if the words in the document are in the same sequence as the words in the phrasal queries.
+
+Brief Sketch:
+- During the preprocessing phase create a dictionary to store the position index of a term
+E.g. “term1” : { “docID1”: [2,10,20] } 
+- Do the same steps for the VSM model
+- In the querying step, add an additional function to check if the document contain the terms of the phrasal queries as well as if the words the document are in the same order as the ones the phrasal queries. However this means that if the query is “John and Jane”, a document containing “Jane and John” will not be returned.
+
+
+
+2)
+(a)Describe how your search engine reacts to long documents and long queries as compared to short documents and queries. 
+(b)Is the normalization you use sufficient to address the problems (see Section 6.4.4 for a hint)? 
+(c)In your judgement, is the ltc.lnc scheme (n.b., not the ranking scheme you were asked to implement) sufficient for retrieving documents from the Reuters-21578 collection?
+
+
+(a)
+Long documents and queries will take a longer than to process than short documents and queries. Longer documents are likely to have a higher relevance since they will either have a higher tf or they might have a larger vocabulary(i.e. more distinct terms). However in terms of retrieving relevant documents, the L2 normalisation over penalises length - meaning that although long documents are more relevant, they are under retrieved. While in the case of short documents, they might be less relevant but they are overretrieved.
+
+
+(b)
+No. The normalisation I used (Euclidean distance normalisation) does not factor in the length of the document in determiningA the relevance of a document.
+As seen in 6.4.4, there is 2 main types of long documents. One is the verbose documents - documents  that repeat the same content and the length of the document does not alter the relative weights of the terms in the documents. For verbose documents, the terms will have higher tf values. The other type of long document is documents that covers multiple different topic. Such documents have more distinct terms. With the Euclidean distance normalisation, long documents tend to have a higher score which may be unnatural.
+As such a possible solution suggested by the book is the pivoted document length normalisation that accounts for the effect of document length on relevance. 
+
+
+(c)
+I think it is sufficient. It boils down to what is the threshold in terms of the recall and precision of the retrieval system and what is the use of this retrieval system. With a loose threshold, I would say that the ltc.lnc scheme is sufficient. However if we are looking a high threshold values, I would say the implementing the pivoted length normalisation would be better.
+
+
+3)Do you think zone or field parametric indices would be useful for practical search in the Reuters collection? Note: the Reuters collection does have metadata for each article but the quality of the metadata is not uniform, nor are the metadata classifications uniformly applied (some documents have it, some don't). Hint: for the next Homework #4, we will be using field metadata, so if you want to base Homework #4 on your Homework #3, you're welcomed to start support of this early (although no extra credit will be given if it's right).
+
+Yes zone or field parametric indices would be useful. While zone and field parametric indices can help to further differentiate the documents, our search engine can cater to meta data searches by users. In the event that a user is searching for distinct terms in the meta data, this is help to save the time of running the calculations for the cosine score for the documents and instead just look at the meta data of the documents and return the most relevant ones based on the query.

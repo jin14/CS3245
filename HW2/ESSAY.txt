@@ -1,0 +1,50 @@
+Replace this file with the answers to the essay questions here.
+A0139100X
+----------------------------------------------------------------------
+
+1)You will observe that a large portion of the terms in the dictionary are numbers. However, we normally do not use numbers as query terms to search. Do you think it is a good idea to remove these number entries from the dictionary and the postings lists? Can you propose methods to normalize these numbers? How many percentage of reduction in disk storage do you observe after removing/normalizing these numbers?
+
+From the perspective of memory space, it will be a good idea to remove number entries as it will help to save memory. Querying speed will also be improved 
+
+However in terms of the robustness of the system, removing numbers will mean that our system will not support number queries. Queries that has numbers eg. dates will not be supported. This will be detrimental, for example in the case of a patent database where a user wants to search for the patents filed in a certain year, the user will not be able to carry out such queries.
+
+I would recommend storing the numbers in a separate index and only load the number dictionary in memory when the query contains numbers, since such queries are rare.
+
+Store all the numbers under the key “num”.
+
+Experiment results:
+
+Before
+Dictionary: 1.3MB
+Postings: 3MB
+
+After
+Dictionary: 780KB
+Postings: 2.8MB
+
+% shrink
+Dictionary: 40%
+Postings: 6%
+
+
+2)What do you think will happen if we remove stop words from the dictionary and postings file? How does it affect the searching phase?
+
+Boolean queries:
+
+With stopwords removed, queries with stopwords will not be supported. For example, “the AND information” will not be supported as “the” is a stopword. A possible way is to return all the docids, based on the assumption that all the documents contain these stopwords. In this case, both recall and precision will decrease.
+
+Apart from that, assuming that we use the same stemmer during the indexing and the searching phase, the query results would not differ much.
+
+The amount of time taken to carry out the search will not differ much, but a smaller dictionary and postings file due to the removal of stop words will help to save space.
+
+Phrasal queries:
+
+We will not be able to match queries such as ‘to be or not to be’ where the entire phrase is made up of stop words. 
+
+
+3)The NLTK tokenizer may not correctly tokenize all terms. What do you observe from the resulting terms produced by sent_tokenize() and word_tokenize()? Can you propose rules to further refine these results?
+
+For the sent_tokenize() it has trouble recognising sentences that contains punctuations that indicate the end of a sentence, eg. “Mr. Pain.”. It sees the full-stop as an end of the sentence instead of recognising that Mr. Pain is still part of the sentence.  
+
+For word_tokenize() it seems to distorts the dates. Eg. 25 February 2016 becomes [25,February,2016]. One could use a regex pattern to find a matching for the dates and tokenize them as one term.
+
